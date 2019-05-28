@@ -218,3 +218,76 @@ toyS=ABCsimple(V,1000,1000000,JJ,II)
 Xtoy=comparaison(toyG,toyS,V,JJ,II)
 
 
+library(ggplot2)
+library(gridExtra)
+library(ggpubr)
+
+#generates parameters from the prior
+hyperpri=matrix(rexp(3*10000),ncol=3)
+pri=apply(hyperpri,1,function(x){prior(1,x)})
+datpri=data.frame(value=pri[1,],Density=rep("Prior",10000))
+
+#For the toy example
+#results of the simulations, comparison between ABC, ABCGibbs and the prior for a coordinate of the parameter
+paramToy=data.frame(value=c(toyG[[2]][,1],toyS[[2]][,1]),Type=c(rep("ABC Gibbs",1000),rep("Vanilla ABC",1000)))
+plotT1 <- ggplot(paramToy,aes(x=value))+geom_histogram(position="dodge",aes(y=..density..,alpha=0.7))+scale_fill_viridis_d()+geom_density(data=datpri,adjust=0.3,aes(x=value))+ theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position="bottom")
+plotT1 <- plotT1 + theme(legend.position = "none",
+                         axis.title.x=element_blank(),
+                         axis.title.y=element_blank(),)
+plotT1 <- plotT1 +facet_grid(cols=vars(Type))
+ggsave("paramtoy.pdf",width=30,height = 15,unit="cm")
+
+#results of the simulations, comparison between ABC and ABCGibbs for a coordinate of the hyperparameter
+hyperToy=data.frame(value=c(toyG[[1]][,2],toyS[[1]][,2]),type=c(rep("ABC Gibbs",1000),rep("Vanilla ABC",1000)))
+plotT2 <- ggplot(hyperToy,aes(x=value))+geom_histogram(position="dodge",aes(fill=type))+scale_fill_viridis_d()+ theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position="bottom")
+
+#results of the simulations, comparison between ABC and ABCGibbs for a coordinate of the hyperparameter
+varianceToy=data.frame(value=c(toyG[[4]][,1],toyS[[4]][,1]),type=c(rep("ABC Gibbs",1000),rep("Vanilla ABC",1000)))
+plotT3 <- ggplot(varianceToy,aes(x=value))+geom_histogram(position="dodge",aes(fill=type))+scale_fill_viridis_d()+ theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position="bottom")
+
+ggarrange(plotT2, plotT3, ncol=2, nrow=1, common.legend = TRUE, legend="bottom",align="h")
+ggsave("hyper-variancetoy.pdf",width=30,height = 15,unit="cm")
+
+#parameter posterior distribution, comparison between ABC and ABCGibbs
+datatoyG=data.frame(mu1=toyG[[2]][,1],mu2=toyG[[3]][,1])
+datatoyS=data.frame(mu1=toyS[[2]][,1],mu2=toyS[[3]][,1])
+plotT4 <- ggplot(datatoyG, aes(x=mu1, y=mu2) ) +  stat_density_2d(aes(fill = ..level..), geom = "polygon", colour="white")+ xlim(-1,1)+ylim(-1,1)+ theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position="bottom")
+plotT5 <- ggplot(datatoyS, aes(x=mu1, y=mu2) ) + stat_density_2d(aes(fill = ..level..), geom = "polygon", colour="white") + xlim(-1,1)+ylim(-1,1)+ theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position="bottom")
+ggarrange(plotT4, plotT5, ncol=2, nrow=1, common.legend = TRUE, legend="bottom",align="h")
+ggsave("param2Dtoy.pdf",width=30,height = 15,unit="cm")
+
+#========================================================================================================
+
+#For the real example
+#results of the simulations, comparison between ABC, ABCGibbs and the prior for a coordinate of the parameter
+paramreel=data.frame(value=c(flux8G[[2]][,1],flux8S[[2]][,1]),type=c(rep("ABC Gibbs",1000),rep("Vanilla ABC",1000)))
+plot1 <- ggplot(paramreel,aes(x=value))+geom_histogram(position="dodge",aes(y=..density..,alpha=0.7))+scale_fill_viridis_d()+geom_density(data=datpri,adjust=0.3,aes(x=value))+ theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position="bottom")
+plot1 <- plot1 + theme(legend.position = "none",
+                         axis.title.x=element_blank(),
+                         axis.title.y=element_blank())
+plot1 <- plot1 +facet_grid(cols=vars(type))
+ggsave("paramreel.pdf",width=30,height = 15,unit="cm")
+
+#results of the simulations, comparison between ABC and ABCGibbs for a coordinate of the hyperparameter
+hyperreel=data.frame(value=c(flux8G[[1]][,2],flux8S[[1]][,2]),type=c(rep("ABC Gibbs",1000),rep("Vanilla ABC",1000)))
+plot2 <- ggplot(hyperreel,aes(x=value))+geom_histogram(position="dodge",aes(fill=type))+scale_fill_viridis_d()+ theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position="bottom")
+
+#results of the simulations, comparison between ABC and ABCGibbs for a coordinate of the hyperparameter
+variancereel=data.frame(value=c(flux8G[[4]][,1],flux8S[[4]][,1]),type=c(rep("ABC Gibbs",1000),rep("Vanilla ABC",1000)))
+plot3 <- ggplot(variancereel,aes(x=value))+geom_histogram(position="dodge",aes(fill=type))+scale_fill_viridis_d()+ theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position="bottom")
+
+
+ggarrange(plot2, plot3, ncol=2, nrow=1, common.legend = TRUE, legend="bottom",align="h")
+ggsave("hyper-variancereel.pdf",width=30,height = 15,unit="cm")
+
+
+#parameter posterior distribution, comparison between ABC and ABCGibbs
+data8G=data.frame(mu1=flux8G[[2]][,1],mu2=flux8G[[3]][,1])
+data8S=data.frame(mu1=flux8S[[2]][,1],mu2=flux8S[[3]][,1])
+plot4 <- ggplot(data8G, aes(x=mu1, y=mu2) ) +  stat_density_2d(aes(fill = ..level..), geom = "polygon", colour="white")+ xlim(-1,1)+ylim(-1,1)+ theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position="bottom")
+plot5 <- ggplot(data8S, aes(x=mu1, y=mu2) ) + stat_density_2d(aes(fill = ..level..), geom = "polygon", colour="white") + xlim(-1,1)+ylim(-1,1)+ theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position="bottom")
+
+ggarrange(plot4, plot5, ncol=2, nrow=1, common.legend = TRUE, legend="bottom",align="h")
+ggsave("param2Dreel.pdf",width=30,height = 15,unit="cm")
+
+
