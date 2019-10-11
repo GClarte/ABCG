@@ -1,3 +1,6 @@
+library(ggplot2)
+library(ggpubr)
+
 
 #a coeff, u état avant, dt pas de temps
 pas <- function(a,u,dt)
