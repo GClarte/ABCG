@@ -3,6 +3,8 @@ ABC gibbs code and data.
 
 Hierarchical Model.R contains the code for the simple normal hierarchical model;
 
+Hierarchical Model dim1.R contains the code for the simple normal hierarchical model in dimension 1;
+
 heat equation.R for the full dependency;
 
 toydata, toyparam and toyparamsig contains the data used for the toy example of the hierarchical Moving average;
