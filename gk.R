@@ -106,7 +106,7 @@ rperturb <- function(p){
 }
 
 dperturb <- function(p,pancien,...){
-  dnorm(p-pancien,0,.1,...)
+  sum(dnorm(p-pancien,0,.1,...))
 }
 
 
@@ -153,13 +153,13 @@ outgib = gibbs(c(100,50,50,50,50),X,1000)
 #comparaison des distances ABC
 
 mean(apply(outVan,1,rdist))
-var(apply(outVan,1,rdist))
+sd(apply(outVan,1,rdist))
 
 mean(apply(outSMC,1,rdist))
-var(apply(outSMC,1,rdist))
+sd(apply(outSMC,1,rdist))
 
-mean(apply(outgib,1,rdist))
-var(apply(outgib[10:1000,],1,rdist))
+mean(apply(outgib[10:1000,],1,rdist))
+sd(apply(outgib[10:1000,],1,rdist))
 
 #plots pour le paramètres
 Dat=data.frame(parameter=c(outSMC[,2],outVan[,2],outgib[,2]),type=c(rep("ABC-SMC",1000),rep("vanilla ABC",1000),rep("ABC Gibbs",1000)))
@@ -170,27 +170,78 @@ colMeans(outSMC)-c(hyper,As,B,g,k)
 colMeans(outVan)-c(hyper,As,B,g,k)
 colMeans(outgib)-c(hyper,As,B,g,k)
 
-apply(outSMC,2,var)
-apply(outVan,2,var)
-apply(outgib,2,var)
+apply(outSMC,2,sd)
+apply(outVan,2,sd)
+apply(outgib,2,sd)
 
 
-Dat=data.frame(value=c(outSMC[,2],outVan[,2],outgib[,2],outSMC[,3],outVan[,3],outgib[,3],outSMC[,4],outVan[,4],outgib[,4],outSMC[,5],outVan[,5],outgib[,5]),Method=rep(c(rep("ABC-SMC",1000),rep("vanilla ABC",1000),rep("ABC Gibbs",1000)),4),Parameter=c(rep(1,3000),rep(2,3000),rep(3,3000),rep(4,3000)))
-f=ggplot(data = Dat) + geom_density(data=Dat,aes(x=value,color=Method)) +geom_vline(data=data.frame(Truth=As[1:4],Parameter=1:4),mapping = aes(xintercept = Truth)) + xlim(c(-3,0))
-f=f+facet_grid(.~Parameter)+theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position = "bottom")+scale_colour_viridis_d()
+Dat <- data.frame(
+  value = c(outSMC[,2], outVan[,2], outgib[,2], 
+            outSMC[,3], outVan[,3], outgib[,3], 
+            outSMC[,4], outVan[,4], outgib[,4],
+            outSMC[,5], outVan[,5], outgib[,5]),
+  Method = rep(c(rep("ABC-SMC", 1000), rep("vanilla ABC",1000),
+                 rep("ABC Gibbs",1000)), 4), 
+  Parameter = c(rep("mu1", 3000), rep("mu2", 3000), rep("mu3", 3000), rep("mu4", 3000))
+  )
+
+Dat$Parameter <- factor(Dat$Parameter, 
+                             levels = c("mu1", "mu2", "mu3", "mu4"), 
+                             labels = c('mu1' = expression(mu[1]),
+                                        'mu2' = expression(mu[2]),
+                                        'mu3' = expression(mu[3]),
+                                        'mu4' = expression(mu[4]))
+)
+
+theta_star <- data.frame(value = As[1:4],
+                         Parameter = levels(Dat$Parameter))
+
+f <- ggplot(data = Dat) + stat_density(aes(x = value, linetype = Method), 
+                                       geom="line", position="identity") + 
+  geom_vline(data = theta_star, aes(xintercept = value)) +
+  theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position="bottom")+
+  theme(axis.title.x=element_blank(),
+        axis.title.y=element_blank())
+f <- f + coord_cartesian(xlim = c(-4,-0), ylim = c(0,5), expand = TRUE,default = FALSE, clip = "on")
+  # geom_density(data=Dat,aes(x=value,color=Method)) 
+    
+f <- f + facet_grid(.~Parameter, labeller = label_parsed) + scale_colour_viridis_d()
 f
-ggsave("4parbis.pdf",height=7,width=25,units = 'cm')
+ggsave("4parbis_nouv.pdf",height=7,width=15,units = 'cm')
 
 #plots pour les hyperparamètres
 
-Dat=data.frame(value=c(outSMC[,1],outVan[,1],outgib[,1],outSMC[,52],outVan[,52],outgib[,52],outSMC[,53],outVan[,53],outgib[,53],outSMC[,54],outVan[,54],outgib[,54]),
-               Method=rep(c(rep("ABC-SMC",1000),rep("vanilla ABC",1000),rep("ABC Gibbs",1000)),4),
-               Parameter=c(rep("hyperparameter",3000),rep("B",3000),rep("g",3000),rep('k',3000)))
+Dat <- data.frame(value = c(outSMC[,1], outVan[,1], outgib[,1],
+                            outSMC[,52], outVan[,52], outgib[,52],
+                            outSMC[,53], outVan[,53], outgib[,53],
+                            outSMC[,54], outVan[,54], outgib[,54]),
+               Method = rep(c(rep("ABC-SMC",1000), rep("vanilla ABC",1000), 
+                              rep("ABC Gibbs",1000)),4),
+               Parameter = c(rep("hyperparameter",3000), rep("B",3000), rep("g",3000), rep('k',3000)))
 
-f=ggplot(data = Dat) + geom_density(data=Dat,aes(x=value,color=Method)) +geom_vline(data=data.frame(Truth=c(hyper,B,g,k),Parameter=c("hyperparameter","B","g","k")),mapping = aes(xintercept = Truth))+xlim(c(-2.1,2.1))
-f=f+facet_grid(.~Parameter)+theme(panel.background = element_rect(fill = 'white', colour = 'grey'))+scale_colour_viridis_d()
+Dat$Parameter <- factor(Dat$Parameter, 
+                        levels = c("hyperparameter", "B", "g", "k"), 
+                        labels = c('hyperparameter' = expression(alpha),
+                                   'B' = expression(B),
+                                   'g' = expression(g),
+                                   'k' = expression(k))
+)
+
+theta_star <- data.frame(value = c(hyper,B,g,k),
+                         Parameter = levels(Dat$Parameter))
+
+f <- ggplot(data = Dat) + stat_density(aes(x = value, linetype = Method),
+                                       geom="line", position="identity") +
+  geom_vline(data = theta_star, aes(xintercept = value)) +
+  theme(panel.background = element_rect(fill = 'white', colour = 'grey'),legend.position="bottom")+
+  theme(axis.title.x=element_blank(),
+        axis.title.y=element_blank())
+# geom_density(data=Dat,aes(x=value,color=Method)) 
+f <- f + coord_cartesian(ylim = c(0,10), expand = TRUE,default = FALSE, clip = "on")
+f <- f + facet_grid(.~Parameter, labeller = label_parsed,scale="free") + scale_colour_viridis_d()
 f
-ggsave("autresparbis.pdf",height=7,width=25,units = 'cm')
+
+ggsave("autresparbis_nouv.pdf",height=7,width=15,units = 'cm')
 
 Dat=data.frame(parameter=c(outSMC[,1],outVan[,1],outgib[,1]),type=c(rep("ABC-SMC",1000),rep("vanilla ABC",1000),rep("ABC Gibbs",1000)))
 f=ggplot(data = Dat) + geom_density(data=Dat,aes(x=parameter,color=type))
