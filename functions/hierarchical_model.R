@@ -1,7 +1,10 @@
+# --------------------------------------------------
+# Functions used to perform the numerical experiment
+# on the hierarchical model described by equation 2
+# --------------------------------------------------
 
-
-gibbsparam <- function(data, hyper, var, sigm, nbeps, qq) {
-  # gibbs step for the parmeter, prior induced by the hyperparameter
+gibbs_step_param <- function(data, hyper, var, sigm, nbeps, qq) {
+  # gibbs step for updating the parmeter
   p <- length(data)
   thetc <- numeric(p)
   dists <- 0
@@ -34,7 +37,7 @@ gibbstot <- function(data, thetini, hyperini, sigm, var, nbeps1, nbeps2, nbpts, 
   resdist <- rep(NA, nbpts)
   for (i in 2:(nbpts + 1)) {
     resdist[i - 1] <- 0
-    VV <- gibbsparam(data, reshyper[i - 1], var, sigm, nbeps1, qq)
+    VV <- gibbs_step_param(data, reshyper[i - 1], var, sigm, nbeps1, qq)
     resparam[, i] <- VV[[1]]
     resdist[i - 1] <- resdist[i - 1] + VV[[2]]
     WW <- gibbshyper(resparam[, i], nbeps2, var)
