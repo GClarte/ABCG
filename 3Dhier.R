@@ -1,6 +1,4 @@
-
-
-
+# --- Libraries
 library(ggplot2)
 library(ggpubr)
 library(smfsb)
@@ -9,18 +7,18 @@ library(mvtnorm)
 
 
 gibbsparam <- function(data, hyper, var, sigm, nbeps, qq) {
-  #gibbs step for the parmeter, prior induced by the hyperparameter
-  p = length(data)
-  thetc = numeric(p)
-  dists=0
-  for (i in 1:p) { 
-    thettest = rnorm(nbeps, hyper, var)
-    test = rowMeans(matrix(rnorm(qq * nbeps, thettest, sigm), nrow = nbeps))
-    dist = abs(test - data[i])
-    thetc[i] = thettest[which.min(dist)]
-    dists=dists+min(dist)
+  # gibbs step for the parmeter, prior induced by the hyperparameter
+  p <- length(data)
+  thetc <- numeric(p)
+  dists <- 0
+  for (i in seq_len(p)) {
+    thettest <- rnorm(nbeps, hyper, var)
+    test <- rowMeans(matrix(rnorm(qq * nbeps, thettest, sigm), nrow = nbeps))
+    dist <- abs(test - data[i])
+    thetc[i] <- thettest[which.min(dist)]
+    dists <- dists + min(dist)
   }
-  return(list(thetc,dists))
+  return(list(thetc, dists))
 }
 
 
