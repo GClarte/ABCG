@@ -11,8 +11,8 @@ source("functions/hierarchical_model.R")
 # --- Pseudo Observation Data Set ---
 n <- 20
 K <- 10 # Nk
-var_x <- 1 # vari
-var_mu <- 1 # sigma
+var_x <- 1 # sigma
+var_mu <- 1 # vari
 obs <- c(
   2.5666002, 2.5808230, 3.4319618, 3.4865059, 3.5939341,
   1.7859019, 2.3653864, 2.7560831, 2.2540691, 2.0810668,
@@ -54,31 +54,14 @@ model <- function(pars, data, n = 20, K = 10) {
 # -------------------------------------------------
 # Experiment to get the ground truth
 # -------------------------------------------------
+exact <- gibbsexact(obs, 10000, sigma, var, 10)
 
 
 # -------------------------------------------------
 # Experiment with component wise ABC
 # -------------------------------------------------
-
-
-# -------------------------------------------------
-# Experiment with vanilla ABC
-# -------------------------------------------------
-
-
-# -------------------------------------------------
-# Experiment with ABC-SMC
-# -------------------------------------------------
-
-
-
-
-
-
-# pour plusieurs valeurs des paramètres
-# le nombre de simulations du modèle vaut 100*1000
 resG100 <- gibbstot(obs, rep(0, 20), 0, sigma, vari, 100, 100, 1000, 10)
-resS100 <- ABCsimple(obs, vari, sigma, 1000, 100 * 1000, 10)
+
 
 resG10 <- gibbstot(obs, rep(0, 20), 0, sigma, vari, 10, 10, 1000, 10)
 
@@ -89,9 +72,14 @@ resG1000 <- gibbstot(obs, rep(0, 20), 0, sigma, vari, 1000, 1000, 1000, 10)
 
 exact <- gibbsexact(obs, 10000, sigm, var, 10)
 
+# -------------------------------------------------
+# Experiment with vanilla ABC
+# -------------------------------------------------
+resS100 <- ABCsimple(obs, vari, sigma, 1000, 100 * 1000, 10)
 
-# pour notre SMC maison
-
+# -------------------------------------------------
+# Experiment with ABC-SMC
+# -------------------------------------------------
 resP100 <- SMCmaison(1000, 20, 1000, resG100[[3]], .9, obs, prior, model)
 
 
